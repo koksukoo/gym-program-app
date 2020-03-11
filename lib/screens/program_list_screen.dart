@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/app_drawer.dart';
 
 class ProgramListScreen extends StatelessWidget {
   @override
@@ -8,6 +9,7 @@ class ProgramListScreen extends StatelessWidget {
       body: Center(
         child: CircularProgressIndicator(),
       ),
+      drawer: AppDrawer(),
     );
   }
 }

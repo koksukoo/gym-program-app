@@ -40,7 +40,6 @@ A new Flutter project.
     - exercises
 * An exercise
     - id
-    - reference to appropriate program day
     - name
     - count of reps / minutes
     - description

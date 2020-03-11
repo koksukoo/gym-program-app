@@ -7,11 +7,13 @@ class Session {
   final DateTime date;
   final Duration duration;
   final ProgramDay programDay;
+  final List<String> completedExerciseIds;
 
   Session({
     @required this.id,
     @required this.date,
     @required this.duration,
     @required this.programDay,
+    this.completedExerciseIds,
   });
 }
