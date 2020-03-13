@@ -10,4 +10,10 @@ class Programs with ChangeNotifier {
   Future <void> refreshPrograms() async {
     
   }
+
+  Future <void> addProgram(Program program) async {
+    print(program.toString());
+    _items.add(program);
+    notifyListeners();
+  }
 }

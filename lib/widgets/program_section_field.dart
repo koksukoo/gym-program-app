@@ -5,13 +5,18 @@ class ProgramSectionField extends StatelessWidget {
   const ProgramSectionField({
     Key key,
     @required this.i,
-    @required List<Map<String, dynamic>> sections,
-    @required this.addExercise
-  }) : _sections = sections, super(key: key);
+    @required Map<String, dynamic> section,
+    @required this.addExercise,
+    @required this.setSectionName,
+    @required this.setExercise,
+  })  : _section = section,
+        super(key: key);
 
   final int i;
-  final List<Map<String, dynamic>> _sections;
+  final Map<String, dynamic> _section;
   final Function addExercise;
+  final Function setSectionName;
+  final Function setExercise;
 
   @override
   Widget build(BuildContext context) {
@@ -22,8 +27,7 @@ class ProgramSectionField extends StatelessWidget {
             border: Border.all(color: Colors.black12, width: 1),
             borderRadius: BorderRadius.circular(3),
           ),
-          padding:
-              EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: <Widget>[
@@ -33,34 +37,44 @@ class ProgramSectionField extends StatelessWidget {
                   padding: const EdgeInsets.only(
                     top: 20.0,
                   ),
-                  child: CircleAvatar(
-                      child: Text((i + 1).toString())),
+                  child: CircleAvatar(child: Text((i + 1).toString())),
                 ),
                 title: TextFormField(
-                  decoration: InputDecoration(
-                      labelText: 'Name of the section'),
+                  decoration: InputDecoration(labelText: 'Name of the section'),
                   textInputAction: TextInputAction.next,
-                  onFieldSubmitted: (_) {},
+                  focusNode: _section['focusNode'],
+                  onFieldSubmitted: (_) {
+                    if (_section['exercises'].length <= 0) {
+                      return;
+                    }
+                    FocusScope.of(context).requestFocus(
+                        _section['exercises'][0]['focusNodes']['name']);
+                  },
+                  onSaved: (value) {
+                    setSectionName(i, value);
+                  },
+                  validator: (value) => value.isEmpty ? 'Provide a name' : null,
                 ),
               ),
               SizedBox(height: 10),
               Column(
                 children: <Widget>[
-                  ..._sections[i]['exercises'].map(
-                    (exercise) => ProgramExerciseField(),
-                  ),
+                  for (var j = 0; j < _section['exercises'].length; j++)
+                    ProgramExerciseField(
+                        exercise: _section['exercises'][j],
+                        setExercise: (field, value) {
+                          setExercise(i, j, field, value);
+                        }),
                 ],
               ),
               FlatButton(
                 child: Row(
                   children: <Widget>[
-                    Icon(Icons.add,
-                        color: Theme.of(context).accentColor),
+                    Icon(Icons.add, color: Theme.of(context).accentColor),
                     SizedBox(width: 10),
                     Text(
                       'Add an exercise',
-                      style: TextStyle(
-                          color: Theme.of(context).accentColor),
+                      style: TextStyle(color: Theme.of(context).accentColor),
                     ),
                   ],
                 ),
