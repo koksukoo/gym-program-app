@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 
 import '../models/program.dart';
 import '../models/exercise.dart';
@@ -39,7 +40,7 @@ class _EditProgramScreenState extends State<EditProgramScreen> {
           'name': FocusNode(),
           'description': FocusNode(),
           'reps': FocusNode(),
-        } as Map<String, FocusNode>,
+        },
       });
     });
   }
@@ -60,15 +61,16 @@ class _EditProgramScreenState extends State<EditProgramScreen> {
     }
 
     _form.currentState.save();
+    final uuid = Uuid();
     final program = Program(
-      id: null,
+      id: uuid.v1(),
       name: _programName,
       cycles: 1,
       programDays: _sections.map((section) => ProgramDay(
-            id: null,
+            id: uuid.v1(),
             name: section['name'],
             exercises: section['exercises'].map<Exercise>((exercise) => Exercise(
-                  id: null,
+                  id: uuid.v1(),
                   name: exercise['name'],
                   repeats: exercise['repeats'],
                   description: exercise['description'],

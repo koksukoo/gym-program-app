@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import './exercise.dart';
 
@@ -13,6 +15,17 @@ class Program {
     @required this.cycles,
     @required this.programDays,
   });
+
+  Map<String, dynamic> toDatabaseFormat() {
+    final Map<String, dynamic> data = {
+      'id': id,
+      'name': name,
+      'cycles': cycles,
+      'programDays':
+          json.encode(programDays.map((day) => day.toMap()).toList()),
+    };
+    return data;
+  }
 }
 
 class ProgramDay {
@@ -25,4 +38,24 @@ class ProgramDay {
     @required this.name,
     @required this.exercises,
   });
+
+  Map<String, dynamic> toMap() {
+    final Map<String, dynamic> data = {
+      'id': id,
+      'name': name,
+      'exercises': exercises
+          .map(
+            (ex) => {
+              'id': ex.id,
+              'name': ex.name,
+              'repeats': ex.repeats,
+              'description': ex.description,
+              'isMinutes': ex.isMinutes,
+            },
+          )
+          .toList(),
+    };
+
+    return data;
+  }
 }
