@@ -6,17 +6,26 @@ import '../helpers/db_helper.dart';
 class Programs with ChangeNotifier {
   List<Program> _items = [];
 
-  List<Program> get items =>[..._items];
+  List<Program> get items => [..._items.reversed];
 
-  Future <void> refreshPrograms() async {
-    
+  Future<void> refreshPrograms() async {
+    final response = await DBHelper.getData('programs');
+    _items =
+        response.map((program) => Program.fromDatabaseFormat(program)).toList();
+    notifyListeners();
   }
 
   void addProgram(Program program) {
-    print(program.toString());
-    _items.add(program);
+    final index = _items.indexWhere((item) => item.id == program.id);
+    if (index >= 0) {
+      _items[index] = program;
+    } else {
+      _items.add(program);
+    }
     notifyListeners();
 
     DBHelper.insert('programs', program.toDatabaseFormat());
   }
+
+  Program findById(String id) => _items.firstWhere((item) => item.id == id);
 }

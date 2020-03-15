@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import './screens/program_list_screen.dart';
 import './screens/edit_program_screen.dart';
+import './screens/user_programs_screen.dart';
 import './providers/programs.dart';
 
 void main() => runApp(MyApp());
@@ -20,6 +21,7 @@ class MyApp extends StatelessWidget {
         home: ProgramListScreen(),
         routes: {
           EditProgramScreen.routeName: (ctx) => EditProgramScreen(),
+          UserProgramsScreen.routeName: (ctx) => UserProgramsScreen(),
         },
       ),
       providers: [

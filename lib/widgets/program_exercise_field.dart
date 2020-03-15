@@ -24,6 +24,7 @@ class ProgramExerciseField extends StatelessWidget {
               TextFormField(
                 decoration: InputDecoration(labelText: 'Name of the exercise'),
                 textInputAction: TextInputAction.next,
+                initialValue: exercise['name'],
                 onFieldSubmitted: (_) {
                   FocusScope.of(context)
                       .requestFocus(exercise['focusNodes']['description']);
@@ -37,6 +38,7 @@ class ProgramExerciseField extends StatelessWidget {
               TextFormField(
                 decoration: InputDecoration(labelText: 'Description'),
                 textInputAction: TextInputAction.next,
+                initialValue: exercise['description'],
                 focusNode: exercise['focusNodes']['description'],
                 onFieldSubmitted: (_) {
                   FocusScope.of(context)
@@ -51,6 +53,7 @@ class ProgramExerciseField extends StatelessWidget {
               TextFormField(
                 decoration: InputDecoration(labelText: 'Repeats'),
                 textInputAction: TextInputAction.none,
+                initialValue: exercise['reps'],
                 focusNode: exercise['focusNodes']['reps'],
                 onFieldSubmitted: (_) {},
                 onSaved: (value) {

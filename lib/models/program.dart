@@ -26,6 +26,30 @@ class Program {
     };
     return data;
   }
+
+  factory Program.fromDatabaseFormat(Map<String, dynamic> dbProgram) => Program(
+        cycles: dbProgram['cycles'],
+        id: dbProgram['id'],
+        name: dbProgram['name'],
+        programDays: json
+            .decode(dbProgram['programDays'])
+            .map<ProgramDay>(
+              (dbDay) => ProgramDay(
+                id: dbDay['id'],
+                name: dbDay['name'],
+                exercises: dbDay['exercises']
+                    .map<Exercise>((dbEx) => Exercise(
+                          id: dbEx['id'],
+                          name: dbEx['name'],
+                          repeats: dbEx['repeats'],
+                          description: dbEx['description'],
+                          isMinutes: dbEx['isMinutes'],
+                        ))
+                    .toList(),
+              ),
+            )
+            .toList(),
+      );
 }
 
 class ProgramDay {

@@ -6,6 +6,7 @@ import '../models/program.dart';
 import '../models/exercise.dart';
 import '../providers/programs.dart';
 import '../widgets/program_section_field.dart';
+import './user_programs_screen.dart';
 
 class EditProgramScreen extends StatefulWidget {
   static const routeName = '/edit-program';
@@ -16,26 +17,37 @@ class EditProgramScreen extends StatefulWidget {
 
 class _EditProgramScreenState extends State<EditProgramScreen> {
   final _form = GlobalKey<FormState>();
+  var _isInit = true;
+  String _programId;
   var _programName = '';
   List<Map<String, dynamic>> _sections = [];
 
-  void _addTrainingSection() {
+  void _addTrainingSection({name: '', String id}) {
     setState(() {
       _sections.add({
-        'name': '',
+        'id': id,
+        'name': name,
         'exercises': <Map<String, dynamic>>[],
         'focusNode': FocusNode(),
       });
     });
   }
 
-  void _addExercise(int index) {
+  void _addExercise(
+    int index, {
+    String id,
+    name: '',
+    description: '',
+    reps: 0,
+    isMinutes: false,
+  }) {
     setState(() {
       _sections[index]['exercises'].add({
-        'name': '',
-        'description': '',
-        'reps': 0,
-        'isMinutes': false,
+        'id': id,
+        'name': name,
+        'description': description,
+        'reps': reps.toString(),
+        'isMinutes': isMinutes,
         'focusNodes': {
           'name': FocusNode(),
           'description': FocusNode(),
@@ -62,24 +74,30 @@ class _EditProgramScreenState extends State<EditProgramScreen> {
 
     _form.currentState.save();
     final uuid = Uuid();
+
     final program = Program(
-      id: uuid.v1(),
+      id: _programId ?? uuid.v1(),
       name: _programName,
       cycles: 1,
-      programDays: _sections.map((section) => ProgramDay(
-            id: uuid.v1(),
-            name: section['name'],
-            exercises: section['exercises'].map<Exercise>((exercise) => Exercise(
-                  id: uuid.v1(),
-                  name: exercise['name'],
-                  repeats: exercise['repeats'],
-                  description: exercise['description'],
-                  isMinutes: exercise['isMinutes'],
-                )).toList(),
-          )).toList(),
+      programDays: _sections
+          .map((section) => ProgramDay(
+                id: section['id'] ?? uuid.v1(),
+                name: section['name'],
+                exercises: section['exercises']
+                    .map<Exercise>((exercise) => Exercise(
+                          id: exercise['id'] ?? uuid.v1(),
+                          name: exercise['name'],
+                          repeats: int.parse(exercise['reps']),
+                          description: exercise['description'],
+                          isMinutes: exercise['isMinutes'],
+                        ))
+                    .toList(),
+              ))
+          .toList(),
     );
 
     Provider.of<Programs>(context, listen: false).addProgram(program);
+    Navigator.of(context).pushReplacementNamed(UserProgramsScreen.routeName);
   }
 
   @override
@@ -96,9 +114,46 @@ class _EditProgramScreenState extends State<EditProgramScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    if (_isInit) {
+      var programId = ModalRoute.of(context).settings.arguments as String;
+      if (programId != null) {
+        var _program =
+            Provider.of<Programs>(context, listen: false).findById(programId);
+        _programName = _program.name;
+        _programId = _program.id;
+
+        for (var i = 0; i < _program.programDays.length; i++) {
+          _addTrainingSection(
+            name: _program.programDays[i].name,
+            id: _program.programDays[i].id,
+          );
+          _program.programDays[i].exercises.forEach((ex) {
+            _addExercise(
+              i,
+              id: ex.id,
+              name: ex.name,
+              description: ex.description,
+              reps: ex.repeats,
+              isMinutes: ex.isMinutes,
+            );
+          });
+        }
+      }
+    }
+    _isInit = false;
+    super.didChangeDependencies();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    var programId = ModalRoute.of(context).settings.arguments as String;
+    var isNewProgram = programId == null;
+
     return Scaffold(
-        appBar: AppBar(title: Text('Edit Program')),
+        appBar: AppBar(
+            title:
+                Text(isNewProgram ? 'Create a New Program' : 'Edit Program')),
         body: Padding(
           child: Form(
             key: _form,
@@ -108,6 +163,7 @@ class _EditProgramScreenState extends State<EditProgramScreen> {
                     decoration:
                         InputDecoration(labelText: 'Name of the program'),
                     textInputAction: TextInputAction.next,
+                    initialValue: _programName,
                     onFieldSubmitted: (_) {
                       if (_sections.length <= 0) {
                         return;
@@ -146,12 +202,6 @@ class _EditProgramScreenState extends State<EditProgramScreen> {
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16),
                           ),
-                          Text(
-                            'You need at least one',
-                            style: TextStyle(
-                                color: Theme.of(context).accentColor,
-                                fontSize: 12),
-                          )
                         ],
                       )
                     ],
