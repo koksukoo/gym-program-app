@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../models/program.dart';
 import '../providers/programs.dart';
 import '../widgets/app_drawer.dart';
 import './edit_program_screen.dart';
@@ -14,10 +15,17 @@ class UserProgramsScreen extends StatefulWidget {
 }
 
 class _UserProgramsScreenState extends State<UserProgramsScreen> {
-  final String _active = null;
+  Program _ongoing;
 
   Future<void> _refreshPrograms(context) async {
     await Provider.of<Programs>(context, listen: false).refreshPrograms();
+  }
+
+  Future<void> _setOngoing(context, Program program) async {
+    setState(() {
+      _ongoing = program;
+    });
+    await Provider.of<Programs>(context, listen: false).setOngoing(program.id);
   }
 
   Future<void> _deleteProgram(context, String id) async {
@@ -58,6 +66,11 @@ class _UserProgramsScreenState extends State<UserProgramsScreen> {
   @override
   void initState() {
     Provider.of<Programs>(context, listen: false).refreshPrograms();
+    Provider.of<Programs>(context, listen: false).ongoing.then((value) {
+      setState(() {
+        _ongoing = value;
+      });
+    });
     super.initState();
   }
 
@@ -104,7 +117,14 @@ class _UserProgramsScreenState extends State<UserProgramsScreen> {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    IconButton(icon: Icon(Icons.star_border), onPressed: null),
+                    IconButton(
+                        icon: Icon(
+                            _ongoing != null && _ongoing.id == programs[i].id
+                                ? Icons.flag
+                                : Icons.outlined_flag),
+                        onPressed: () {
+                          _setOngoing(context, programs[i]);
+                        }),
                     PopupMenuButton<ProgramActions>(
                       icon: Icon(Icons.more_vert),
                       itemBuilder: (_) => [
@@ -121,7 +141,7 @@ class _UserProgramsScreenState extends State<UserProgramsScreen> {
                       onSelected: (ProgramActions value) {
                         switch (value) {
                           case ProgramActions.Active:
-                            //
+                            _setOngoing(context, programs[i]);
                             break;
                           case ProgramActions.Edit:
                             Navigator.of(context).pushNamed(
