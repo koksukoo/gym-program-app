@@ -28,4 +28,11 @@ class Programs with ChangeNotifier {
   }
 
   Program findById(String id) => _items.firstWhere((item) => item.id == id);
+
+  void delete(String id) {
+    _items.removeWhere((item) => item.id == id);
+    notifyListeners();
+
+    DBHelper.delete('programs', id);
+  }
 }

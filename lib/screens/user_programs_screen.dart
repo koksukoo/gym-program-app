@@ -4,6 +4,8 @@ import '../providers/programs.dart';
 import '../widgets/app_drawer.dart';
 import './edit_program_screen.dart';
 
+enum ProgramActions { Edit, Active, Delete }
+
 class UserProgramsScreen extends StatefulWidget {
   static const routeName = '/user-programs';
 
@@ -16,6 +18,41 @@ class _UserProgramsScreenState extends State<UserProgramsScreen> {
 
   Future<void> _refreshPrograms(context) async {
     await Provider.of<Programs>(context, listen: false).refreshPrograms();
+  }
+
+  Future<void> _deleteProgram(context, String id) async {
+    return showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+              title: Text('Are you sure?'),
+              content: SingleChildScrollView(
+                child: ListBody(
+                  children: <Widget>[
+                    Text('This can not be undone'),
+                  ],
+                ),
+              ),
+              actions: <Widget>[
+                FlatButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                  },
+                  child: Text('Cancel'),
+                ),
+                FlatButton(
+                  onPressed: () {
+                    setState(() {
+                      Provider.of<Programs>(context, listen: false).delete(id);
+                    });
+                    Navigator.of(ctx).pop();
+                  },
+                  child: Text(
+                    'Delete Program',
+                    style: TextStyle(color: Colors.redAccent),
+                  ),
+                ),
+              ],
+            ));
   }
 
   @override
@@ -68,7 +105,34 @@ class _UserProgramsScreenState extends State<UserProgramsScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     IconButton(icon: Icon(Icons.star_border), onPressed: null),
-                    Icon(Icons.more_vert)
+                    PopupMenuButton<ProgramActions>(
+                      icon: Icon(Icons.more_vert),
+                      itemBuilder: (_) => [
+                        PopupMenuItem(
+                            child: Text('Set Active'),
+                            value: ProgramActions.Active),
+                        PopupMenuItem(
+                            child: Text('Edit Program'),
+                            value: ProgramActions.Edit),
+                        PopupMenuItem(
+                            child: Text('Delete Program'),
+                            value: ProgramActions.Delete),
+                      ],
+                      onSelected: (ProgramActions value) {
+                        switch (value) {
+                          case ProgramActions.Active:
+                            //
+                            break;
+                          case ProgramActions.Edit:
+                            Navigator.of(context).pushNamed(
+                                EditProgramScreen.routeName,
+                                arguments: programs[i].id);
+                            break;
+                          default:
+                            _deleteProgram(context, programs[i].id);
+                        }
+                      },
+                    ),
                   ],
                 ),
                 onTap: () {

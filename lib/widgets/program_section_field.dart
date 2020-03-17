@@ -9,6 +9,8 @@ class ProgramSectionField extends StatelessWidget {
     @required this.addExercise,
     @required this.setSectionName,
     @required this.setExercise,
+    @required this.removeSection,
+    @required this.removeExercise,
   })  : _section = section,
         super(key: key);
 
@@ -17,6 +19,8 @@ class ProgramSectionField extends StatelessWidget {
   final Function addExercise;
   final Function setSectionName;
   final Function setExercise;
+  final Function removeSection;
+  final Function removeExercise;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +42,9 @@ class ProgramSectionField extends StatelessWidget {
                     child: CircleAvatar(child: Text((i + 1).toString())),
                   ),
                   title: TextFormField(
-                    decoration: InputDecoration(labelText: 'Name of the section'),
+                    key: _section['key'],
+                    decoration:
+                        InputDecoration(labelText: 'Name of the section'),
                     initialValue: _section['name'],
                     textInputAction: TextInputAction.next,
                     focusNode: _section['focusNode'],
@@ -52,34 +58,61 @@ class ProgramSectionField extends StatelessWidget {
                     onSaved: (value) {
                       setSectionName(i, value);
                     },
-                    validator: (value) => value.isEmpty ? 'Provide a name' : null,
+                    validator: (value) =>
+                        value.isEmpty ? 'Provide a name' : null,
                   ),
                 ),
                 SizedBox(height: 10),
                 Column(
                   children: <Widget>[
                     for (var j = 0; j < _section['exercises'].length; j++)
+                      if (_section['exercises'][j] != null)
                       ProgramExerciseField(
                           exercise: _section['exercises'][j],
                           setExercise: (field, value) {
                             setExercise(i, j, field, value);
+                          },
+                          removeExercise: () {
+                            removeExercise(context, i, j);
                           }),
                   ],
                 ),
-                FlatButton(
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.add, color: Theme.of(context).accentColor),
-                      SizedBox(width: 10),
-                      Text(
-                        'Add an exercise',
-                        style: TextStyle(color: Theme.of(context).accentColor),
+                ButtonBar(
+                  children: <Widget>[
+                    FlatButton(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Icon(Icons.add, color: Theme.of(context).accentColor),
+                          SizedBox(width: 10),
+                          Text(
+                            'Add an Exercise',
+                            style:
+                                TextStyle(color: Theme.of(context).accentColor),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  onPressed: () {
-                    addExercise(i);
-                  },
+                      onPressed: () {
+                        addExercise(i);
+                      },
+                    ),
+                    FlatButton(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Icon(Icons.delete_outline, color: Colors.redAccent),
+                          SizedBox(width: 10),
+                          Text(
+                            'Remove',
+                            style: TextStyle(color: Colors.redAccent),
+                          ),
+                        ],
+                      ),
+                      onPressed: () {
+                        removeSection(context, i, _section['id']);
+                      },
+                    ),
+                  ],
                 ),
                 SizedBox(height: 10)
               ],
