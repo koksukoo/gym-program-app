@@ -18,6 +18,7 @@ class ProgramListScreen extends StatefulWidget {
 
 class _ProgramListScreenState extends State<ProgramListScreen> {
   Program _ongoingProgram;
+  Session _ongoingSession;
   ProgramDay _selectedSection;
   var _uuid = Uuid();
 
@@ -83,18 +84,21 @@ class _ProgramListScreenState extends State<ProgramListScreen> {
                 ),
               SizedBox(height: 20),
               RaisedButton(
-                onPressed: _selectedSection == null ? null : () async {
-                  await Provider.of<Sessions>(context, listen: false)
-                      .addSession(
-                    Session(
-                        id: _uuid.v1(),
-                        date: DateTime.now(),
-                        duration: null,
-                        programDayId: _selectedSection.id,
-                        completedExerciseIds: []),
-                  );
-                  Navigator.pushNamed(context, SessionScreen.routeName);
-                },
+                onPressed: _selectedSection == null
+                    ? null
+                    : () async {
+                        await Provider.of<Sessions>(context, listen: false)
+                            .addSession(
+                                Session(
+                                    id: _uuid.v1(),
+                                    date: DateTime.now(),
+                                    duration: null,
+                                    programDayId: _selectedSection.id,
+                                    completedExerciseIds: []),
+                                true);
+                        Navigator.pushReplacementNamed(
+                            context, SessionScreen.routeName);
+                      },
                 child: Text('Start Session',
                     style: TextStyle(color: Colors.white)),
                 color: Theme.of(context).primaryColor,
@@ -116,6 +120,11 @@ class _ProgramListScreenState extends State<ProgramListScreen> {
       });
     });
     Provider.of<Sessions>(context, listen: false).refreshSessions();
+    Provider.of<Sessions>(context, listen: false).ongoing.then((value) {
+      setState(() {
+        _ongoingSession = value;
+      });
+    });
     super.initState();
   }
 
@@ -158,6 +167,16 @@ class _ProgramListScreenState extends State<ProgramListScreen> {
                         ),
                         title: Text(programDay.name),
                         subtitle: Text(subtitle),
+                        trailing: _ongoingSession != null &&
+                                _ongoingSession.id == session.id
+                            ? Text(
+                                'ONGOING',
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: Theme.of(context).accentColor),
+                              )
+                            : null,
                       ),
                       key: Key(session.id),
                       background: Container(

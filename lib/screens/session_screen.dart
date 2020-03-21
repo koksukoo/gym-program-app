@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -30,7 +31,7 @@ class _SessionScreenState extends State<SessionScreen> {
     final seconds = (durationSeconds - hours * 3600 - minutes * 60).floor();
     setState(() {
       _clock =
-        '${hours < 10 ? '0' : ''}$hours:${minutes < 10 ? '0' : ''}$minutes:${seconds < 10 ? '0' : ''}$seconds';
+          '${hours < 10 ? '0' : ''}$hours:${minutes < 10 ? '0' : ''}$minutes:${seconds < 10 ? '0' : ''}$seconds';
     });
   }
 
@@ -59,6 +60,10 @@ class _SessionScreenState extends State<SessionScreen> {
     super.dispose();
   }
 
+  bool isCompletedExercise(int index) =>
+      _session.completedExerciseIds != null &&
+      _session.completedExerciseIds.contains(_programDay.exercises[index].id);
+
   @override
   Widget build(BuildContext context) {
     return _ongoingProgram == null
@@ -70,6 +75,165 @@ class _SessionScreenState extends State<SessionScreen> {
                   : Scaffold(
                       appBar:
                           AppBar(title: Text('${_programDay.name} – $_clock')),
+                      body: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          SizedBox(height: 10),
+                          if (_session.completedExerciseIds != null &&
+                              _session.completedExerciseIds.length >
+                                  0) ...<Widget>[
+                            Text('Done exercises:',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                )),
+                            Expanded(
+                                flex: 0,
+                                child: ListView.builder(
+                                    shrinkWrap: true,
+                                    itemCount: _programDay.exercises.length,
+                                    itemBuilder: (ctx, i) =>
+                                        isCompletedExercise(i)
+                                            ? ListTile(
+                                                leading: CircleAvatar(
+                                                  backgroundColor: Colors.grey,
+                                                  child: FittedBox(
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              5.0),
+                                                      child: Column(
+                                                        children: <Widget>[
+                                                          Text(
+                                                            _programDay
+                                                                .exercises[i]
+                                                                .repeats
+                                                                .toString(),
+                                                            style: TextStyle(
+                                                                fontSize: 24,
+                                                                color: Colors
+                                                                    .white),
+                                                          ),
+                                                          Text('reps',
+                                                              style: TextStyle(
+                                                                  color: Colors
+                                                                      .white)),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                title: Text(
+                                                    _programDay
+                                                        .exercises[i].name,
+                                                    style: TextStyle(
+                                                        color: Colors.grey)),
+                                              )
+                                            : null))
+                          ],
+                          Text(
+                            'Upcoming exercises:',
+                            style: TextStyle(
+                              color: Colors.grey,
+                            ),
+                          ),
+                          Expanded(
+                            flex: 1,
+                            child: ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: _programDay.exercises.length,
+                              itemBuilder: (context, i) => isCompletedExercise(
+                                      i)
+                                  ? null
+                                  : Dismissible(
+                                      direction: DismissDirection.startToEnd,
+                                      background: Container(
+                                        color: Colors.green,
+                                        alignment: Alignment.centerLeft,
+                                        child: Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 20.0),
+                                          child: Icon(
+                                            Icons.check,
+                                            color: Colors.white,
+                                            size: 30,
+                                          ),
+                                        ),
+                                      ),
+                                      child: ListTile(
+                                        leading: CircleAvatar(
+                                          child: FittedBox(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(5.0),
+                                              child: Column(
+                                                children: <Widget>[
+                                                  Text(
+                                                    _programDay
+                                                        .exercises[i].repeats
+                                                        .toString(),
+                                                    style:
+                                                        TextStyle(fontSize: 24),
+                                                  ),
+                                                  Text('reps'),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        title:
+                                            Text(_programDay.exercises[i].name),
+                                      ),
+                                      key: Key(_programDay.exercises[i].id),
+                                      onDismissed: (direction) {
+                                        sessions.addSession(Session(
+                                          id: _session.id,
+                                          date: _session.date,
+                                          duration: DateTime.now()
+                                              .difference(_session.date),
+                                          programDayId: _session.programDayId,
+                                          completedExerciseIds: [
+                                            _programDay.exercises[i].id
+                                          ],
+                                        ));
+                                        setState(() {
+                                          _programDay.exercises
+                                              .remove(_programDay.exercises[i]);
+                                        });
+                                        print(_session.completedExerciseIds
+                                            .toString());
+                                      },
+                                    ),
+                            ),
+                          ),
+                          Container(
+                              height: Theme.of(context).buttonTheme.height,
+                              width: double.infinity,
+                              child: RaisedButton(
+                                color: Colors.redAccent,
+                                onPressed: () {
+                                  sessions.addSession(Session(
+                                    id: _session.id,
+                                    date: _session.date,
+                                    duration: DateTime.now()
+                                        .difference(_session.date),
+                                    programDayId: _session.programDayId,
+                                    completedExerciseIds:
+                                        _session.completedExerciseIds,
+                                  ));
+                                  sessions.setOngoing(null).then((_) {
+                                    Navigator.of(context).pop();
+                                  });
+                                },
+                                child: Text(
+                                  'End Session',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              )),
+                        ],
+                      ),
                     );
             },
           );

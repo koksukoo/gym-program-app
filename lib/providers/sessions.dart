@@ -30,6 +30,7 @@ class Sessions with ChangeNotifier {
     if (id == null) {
       prefs.remove('ongoingSessionId');
       _ongoingId = null;
+      notifyListeners();
       return;
     }
     final item = _items.firstWhere((item) => item.id == id);
@@ -40,18 +41,19 @@ class Sessions with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addSession(Session session) async {
+  Future<void> addSession(Session session, [bool setActive = false]) async {
     final index = _items.indexWhere((item) => item.id == session.id);
-    if (_ongoingId != null) {
-      // can not create new if there is an ongoing session
-      return;
-    }
     if (index >= 0) {
       _items[index] = session;
     } else {
+      if (_ongoingId != null) {
+        return; // can not create new if there is an ongoing session
+      }
       _items.add(session);
     }
-    await setOngoing(session.id);
+    if (setActive) {
+      await setOngoing(session.id);
+    }
     notifyListeners();
 
     DBHelper.insert('sessions', session.toDatabaseFormat());
@@ -63,7 +65,7 @@ class Sessions with ChangeNotifier {
         response.map((program) => Session.fromDatabaseFormat(program)).toList();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (items.length > 0) {
-      final ongoingPref = prefs.getString('ongoingSessionId') ?? items[0].id;
+      final ongoingPref = prefs.getString('ongoingSessionId');
       _ongoingId = ongoingPref;
     }
 

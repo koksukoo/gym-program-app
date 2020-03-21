@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
-
 class Session {
   final String id;
   final DateTime date;
@@ -36,6 +35,6 @@ class Session {
         programDayId: dbSession['programDayId'],
         completedExerciseIds: dbSession['completedExerciseIds'] == null
             ? []
-            : json.decode(dbSession['completedExerciseIds']) as List<String>,
+            : List<String>.from(json.decode(dbSession['completedExerciseIds'])),
       );
 }
