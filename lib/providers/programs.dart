@@ -25,13 +25,18 @@ class Programs with ChangeNotifier {
   }
 
   Future<void> setOngoing(String id) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (id == null) {
+      prefs.remove('ongoingProgramId');
+      _ongoingId = null;
+      return;
+    }
     final item = _items.firstWhere((item) => item.id == id);
     if (item != null) {
       _ongoingId = item.id;
-      notifyListeners();
-      SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setString('ongoingProgramId', item.id);
     }
+    notifyListeners();
   }
 
   Future<void> refreshPrograms() async {
@@ -57,6 +62,9 @@ class Programs with ChangeNotifier {
 
   void delete(String id) {
     _items.removeWhere((item) => item.id == id);
+    if(_ongoingId == id) {
+      setOngoing(_items.length > 0 ? _items[0].id : null);
+    }
     notifyListeners();
 
     DBHelper.delete('programs', id);

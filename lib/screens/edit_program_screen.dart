@@ -21,6 +21,7 @@ class _EditProgramScreenState extends State<EditProgramScreen> {
   final _uuid = Uuid();
   String _programId;
   var _programName = '';
+  var _programNameKey = GlobalKey();
   List<Map<String, dynamic>> _sections = [];
 
   void _addTrainingSection({name: '', String id}) {
@@ -254,7 +255,7 @@ class _EditProgramScreenState extends State<EditProgramScreen> {
           child: ListView(
             children: <Widget>[
               TextFormField(
-                  key: GlobalKey(),
+                  key: _programNameKey,
                   decoration: InputDecoration(labelText: 'Name of the program'),
                   textInputAction: TextInputAction.next,
                   initialValue: _programName,

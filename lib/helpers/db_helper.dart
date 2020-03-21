@@ -8,10 +8,8 @@ class DBHelper {
     return sql.openDatabase(
       path.join(dbPath, 'gym.db'),
       onCreate: (db, version) {
-        return db.execute('''
-     CREATE TABLE programs(id TEXT PRIMARY KEY, name TEXT, cycles INTEGER, programDays TEXT);
-     CREATE TABLE sessions(id TEXT PRIMARY KEY, date TEXT, duration INTEGER, programDayId TEXT, completedExerciseIds TEXT);
-     ''');
+        db.execute('CREATE TABLE programs(id TEXT PRIMARY KEY, name TEXT, cycles INTEGER, programDays TEXT); ');
+        return db.execute('CREATE TABLE sessions(id TEXT PRIMARY KEY, date TEXT, duration INTEGER, programDayId TEXT, completedExerciseIds TEXT); ');
       },
       version: 1,
     );
