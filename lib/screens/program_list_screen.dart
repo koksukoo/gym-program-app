@@ -84,12 +84,14 @@ class _ProgramListScreenState extends State<ProgramListScreen> {
               SizedBox(height: 20),
               RaisedButton(
                 onPressed: () async {
-                  await Provider.of<Sessions>(context, listen: false).addSession(
+                  await Provider.of<Sessions>(context, listen: false)
+                      .addSession(
                     Session(
                         id: _uuid.v1(),
                         date: DateTime.now(),
                         duration: null,
-                        programDayId: _selectedSection.id),
+                        programDayId: _selectedSection.id,
+                        completedExerciseIds: []),
                   );
                   Navigator.pushNamed(context, SessionScreen.routeName);
                 },
@@ -115,8 +117,10 @@ class _ProgramListScreenState extends State<ProgramListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final scaffoldKey = GlobalKey<ScaffoldState>();
     return Consumer(
-      builder: (BuildContext context, Sessions sessions, _) => Scaffold(
+      builder: (BuildContext ctx, Sessions sessions, _) => Scaffold(
+        key: scaffoldKey,
         appBar: AppBar(
           title: Text(
               _ongoingProgram == null ? 'Loading...' : _ongoingProgram.name),
@@ -127,8 +131,56 @@ class _ProgramListScreenState extends State<ProgramListScreen> {
               )
             : ListView.builder(
                 itemCount: sessions.items.length,
-                itemBuilder: (ctx, i) =>
-                    ListTile(leading: Text(sessions.items[i].id)),
+                itemBuilder: (ctx, i) {
+                  final programDay = _ongoingProgram.programDays.firstWhere(
+                      (item) => item.id == sessions.items[i].programDayId);
+                  final session = sessions.items[i];
+                  final hasCompletedExercises =
+                      session.completedExerciseIds != null;
+                  final subtitle =
+                      'Completed ${!hasCompletedExercises ? 0 : session.completedExerciseIds.length}/${programDay.exercises.length} of exercises';
+                  return Dismissible(
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        child: FittedBox(
+                          child: Padding(
+                            padding: const EdgeInsets.all(5.0),
+                            child: Text(
+                              '${session.date.day}.${session.date.month}',
+                            ),
+                          ),
+                        ),
+                      ),
+                      title: Text(programDay.name),
+                      subtitle: Text(subtitle),
+                    ),
+                    key: Key(session.id),
+                    background: Container(
+                      alignment: Alignment.centerRight,
+                      color: Colors.redAccent,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 20.0),
+                        child: Icon(
+                          Icons.delete_forever,
+                          color: Colors.white,
+                          size: 30,
+                        ),
+                      ),
+                    ),
+                    direction: DismissDirection.endToStart,
+                    onDismissed: (direction) {
+                      scaffoldKey.currentState.showSnackBar(
+                        SnackBar(
+                          content: Center(
+                            heightFactor: 1,
+                            child: Text(
+                                'Session ${programDay.name} on ${session.date.day}.${session.date.month} Deleted!'),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
               ),
         drawer: AppDrawer(),
         floatingActionButton: FloatingActionButton(

@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
-import './program.dart';
 
 class Session {
   final String id;
@@ -24,7 +23,8 @@ class Session {
       'date': date.toIso8601String(),
       'duration': duration == null ? 0 : duration.inSeconds,
       'programDayId': programDayId,
-      'completedExerciseIds': json.encode(completedExerciseIds),
+      'completedExerciseIds':
+          completedExerciseIds == null ? [] : json.encode(completedExerciseIds),
     };
     return data;
   }
@@ -34,7 +34,8 @@ class Session {
         date: DateTime.parse(dbSession['date']),
         duration: Duration(seconds: dbSession['duration']),
         programDayId: dbSession['programDayId'],
-        completedExerciseIds:
-            json.decode(dbSession['completedExerciseIds']) as List<String>,
+        completedExerciseIds: dbSession['completedExerciseIds'] == null
+            ? []
+            : json.decode(dbSession['completedExerciseIds']) as List<String>,
       );
 }
