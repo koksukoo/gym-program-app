@@ -83,7 +83,7 @@ class _ProgramListScreenState extends State<ProgramListScreen> {
                 ),
               SizedBox(height: 20),
               RaisedButton(
-                onPressed: () async {
+                onPressed: _selectedSection == null ? null : () async {
                   await Provider.of<Sessions>(context, listen: false)
                       .addSession(
                     Session(
@@ -102,6 +102,10 @@ class _ProgramListScreenState extends State<ProgramListScreen> {
             ],
           ),
         ));
+  }
+
+  Future<void> _refreshSessions() async {
+    await Provider.of<Sessions>(context, listen: false).refreshSessions();
   }
 
   @override
@@ -129,58 +133,62 @@ class _ProgramListScreenState extends State<ProgramListScreen> {
             ? Center(
                 child: CircularProgressIndicator(),
               )
-            : ListView.builder(
-                itemCount: sessions.items.length,
-                itemBuilder: (ctx, i) {
-                  final programDay = _ongoingProgram.programDays.firstWhere(
-                      (item) => item.id == sessions.items[i].programDayId);
-                  final session = sessions.items[i];
-                  final hasCompletedExercises =
-                      session.completedExerciseIds != null;
-                  final subtitle =
-                      'Completed ${!hasCompletedExercises ? 0 : session.completedExerciseIds.length}/${programDay.exercises.length} of exercises';
-                  return Dismissible(
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        child: FittedBox(
-                          child: Padding(
-                            padding: const EdgeInsets.all(5.0),
-                            child: Text(
-                              '${session.date.day}.${session.date.month}',
+            : RefreshIndicator(
+                child: ListView.builder(
+                  itemCount: sessions.items.length,
+                  itemBuilder: (ctx, i) {
+                    final programDay = _ongoingProgram.programDays.firstWhere(
+                        (item) => item.id == sessions.items[i].programDayId);
+                    final session = sessions.items[i];
+                    final hasCompletedExercises =
+                        session.completedExerciseIds != null;
+                    final subtitle =
+                        'Completed ${!hasCompletedExercises ? 0 : session.completedExerciseIds.length}/${programDay.exercises.length} of exercises';
+                    return Dismissible(
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          child: FittedBox(
+                            child: Padding(
+                              padding: const EdgeInsets.all(5.0),
+                              child: Text(
+                                '${session.date.day}.${session.date.month}',
+                              ),
                             ),
                           ),
                         ),
+                        title: Text(programDay.name),
+                        subtitle: Text(subtitle),
                       ),
-                      title: Text(programDay.name),
-                      subtitle: Text(subtitle),
-                    ),
-                    key: Key(session.id),
-                    background: Container(
-                      alignment: Alignment.centerRight,
-                      color: Colors.redAccent,
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 20.0),
-                        child: Icon(
-                          Icons.delete_forever,
-                          color: Colors.white,
-                          size: 30,
-                        ),
-                      ),
-                    ),
-                    direction: DismissDirection.endToStart,
-                    onDismissed: (direction) {
-                      scaffoldKey.currentState.showSnackBar(
-                        SnackBar(
-                          content: Center(
-                            heightFactor: 1,
-                            child: Text(
-                                'Session ${programDay.name} on ${session.date.day}.${session.date.month} Deleted!'),
+                      key: Key(session.id),
+                      background: Container(
+                        alignment: Alignment.centerRight,
+                        color: Colors.redAccent,
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 20.0),
+                          child: Icon(
+                            Icons.delete_forever,
+                            color: Colors.white,
+                            size: 30,
                           ),
                         ),
-                      );
-                    },
-                  );
-                },
+                      ),
+                      direction: DismissDirection.endToStart,
+                      onDismissed: (direction) {
+                        sessions.delete(session.id);
+                        scaffoldKey.currentState.showSnackBar(
+                          SnackBar(
+                            content: Center(
+                              heightFactor: 1,
+                              child: Text(
+                                  'Session ${programDay.name} on ${session.date.day}.${session.date.month} Deleted!'),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+                onRefresh: _refreshSessions,
               ),
         drawer: AppDrawer(),
         floatingActionButton: FloatingActionButton(

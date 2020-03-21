@@ -9,8 +9,21 @@ class Sessions with ChangeNotifier {
 
   List<Session> get items => [..._items];
 
-  Session get ongoing =>
-      _items.firstWhere((item) => item.id == _ongoingId, orElse: () => null);
+  Future<Session> get ongoing async {
+    await refreshSessions();
+    if (_items.length <= 0) {
+      return null;
+    }
+    if (_ongoingId == null) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String prefsId = prefs.getString('ongoingSessionId') ?? null;
+      _ongoingId = prefsId;
+    }
+    notifyListeners();
+    return _ongoingId == null
+        ? null
+        : _items.firstWhere((item) => item.id == _ongoingId);
+  }
 
   Future<void> setOngoing(String id) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -29,7 +42,8 @@ class Sessions with ChangeNotifier {
 
   Future<void> addSession(Session session) async {
     final index = _items.indexWhere((item) => item.id == session.id);
-    if (_ongoingId != null) { // can not create new if there is an ongoing session
+    if (_ongoingId != null) {
+      // can not create new if there is an ongoing session
       return;
     }
     if (index >= 0) {
@@ -52,9 +66,19 @@ class Sessions with ChangeNotifier {
       final ongoingPref = prefs.getString('ongoingSessionId') ?? items[0].id;
       _ongoingId = ongoingPref;
     }
-    
+
     notifyListeners();
   }
 
   Session findById(String id) => _items.firstWhere((item) => item.id == id);
+
+  void delete(String id) {
+    _items.removeWhere((item) => item.id == id);
+    if (_ongoingId == id) {
+      setOngoing(null);
+    }
+    notifyListeners();
+
+    DBHelper.delete('sessions', id);
+  }
 }
