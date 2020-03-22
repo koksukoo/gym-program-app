@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -22,6 +22,7 @@ class _SessionScreenState extends State<SessionScreen> {
   ProgramDay _programDay;
   var _clock = '00:00:00';
   Timer _timer;
+  var _randomString = Random().nextInt(10000).toString();
 
   void updateClock(Timer timer) {
     final difference = DateTime.now().difference(_session.date);
@@ -184,24 +185,31 @@ class _SessionScreenState extends State<SessionScreen> {
                                         title:
                                             Text(_programDay.exercises[i].name),
                                       ),
-                                      key: Key(_programDay.exercises[i].id),
+                                      key: Key(_programDay.exercises[i].id +
+                                          _randomString),
                                       onDismissed: (direction) {
-                                        sessions.addSession(Session(
+                                        var ex = _programDay.exercises[i];
+                                        final ses = Session(
                                           id: _session.id,
                                           date: _session.date,
                                           duration: DateTime.now()
                                               .difference(_session.date),
                                           programDayId: _session.programDayId,
                                           completedExerciseIds: [
-                                            _programDay.exercises[i].id
+                                            ..._session.completedExerciseIds,
+                                            ex.id
                                           ],
-                                        ));
-                                        setState(() {
-                                          _programDay.exercises
-                                              .remove(_programDay.exercises[i]);
+                                        );
+                                        _randomString =
+                                            Random().nextInt(10000).toString();
+                                        sessions.addSession(ses).then((_) {
+                                          setState(() {
+                                            _session = ses;
+                                          });
+                                          print(_session.completedExerciseIds
+                                              .toString());
+                                          print(_programDay.exercises.length);
                                         });
-                                        print(_session.completedExerciseIds
-                                            .toString());
                                       },
                                     ),
                             ),

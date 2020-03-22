@@ -151,6 +151,15 @@ class _ProgramListScreenState extends State<ProgramListScreen> {
                     final session = sessions.items[i];
                     final hasCompletedExercises =
                         session.completedExerciseIds != null;
+                    final durationSeconds = session.duration.inSeconds;
+                    final hours = (durationSeconds / 3600).floor();
+                    final minutes =
+                        (durationSeconds / 60 - (hours * 60)).floor();
+                    final seconds =
+                        (durationSeconds - hours * 3600 - minutes * 60).floor();
+                    final time =
+                        '${hours > 0 ? '${hours}h' : ''} ${minutes}min ${seconds}s';
+
                     final subtitle =
                         'Completed ${!hasCompletedExercises ? 0 : session.completedExerciseIds.length}/${programDay.exercises.length} of exercises';
                     return Dismissible(
@@ -176,7 +185,7 @@ class _ProgramListScreenState extends State<ProgramListScreen> {
                                     fontWeight: FontWeight.bold,
                                     color: Theme.of(context).accentColor),
                               )
-                            : null,
+                            : Text(time),
                       ),
                       key: Key(session.id),
                       background: Container(
