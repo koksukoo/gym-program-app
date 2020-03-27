@@ -252,72 +252,75 @@ class _EditProgramScreenState extends State<EditProgramScreen> {
       body: Padding(
         child: Form(
           key: _form,
-          child: ListView(
-            children: <Widget>[
-              TextFormField(
-                  key: _programNameKey,
-                  decoration: InputDecoration(labelText: 'Name of the program'),
-                  textInputAction: TextInputAction.next,
-                  initialValue: _programName,
-                  onFieldSubmitted: (_) {
-                    if (_sections.length <= 0) {
-                      return;
-                    }
-                    FocusScope.of(context)
-                        .requestFocus(_sections[0]['focusNode']);
-                  },
-                  onSaved: (value) {
-                    _programName = value;
-                  },
-                  validator: (value) =>
-                      value.isEmpty ? 'Provide a name' : null),
-              SizedBox(height: 10),
-              for (var i = 0; i < _sections.length; i++)
-                if (_sections[i] != null)
-                  ProgramSectionField(
-                    i: i,
-                    section: _sections[i],
-                    addExercise: _addExercise,
-                    setSectionName: _setSectionName,
-                    setExercise: _setExercise,
-                    removeSection: _removeSection,
-                    removeExercise: _removeExercise,
+          child: SingleChildScrollView(
+            child: Column(
+              children: <Widget>[
+                TextFormField(
+                    key: _programNameKey,
+                    decoration:
+                        InputDecoration(labelText: 'Name of the program'),
+                    textInputAction: TextInputAction.next,
+                    initialValue: _programName,
+                    onFieldSubmitted: (_) {
+                      if (_sections.length <= 0) {
+                        return;
+                      }
+                      FocusScope.of(context)
+                          .requestFocus(_sections[0]['focusNode']);
+                    },
+                    onSaved: (value) {
+                      _programName = value;
+                    },
+                    validator: (value) =>
+                        value.isEmpty ? 'Provide a name' : null),
+                SizedBox(height: 10),
+                for (var i = 0; i < _sections.length; i++)
+                  if (_sections[i] != null)
+                    ProgramSectionField(
+                      i: i,
+                      section: _sections[i],
+                      addExercise: _addExercise,
+                      setSectionName: _setSectionName,
+                      setExercise: _setExercise,
+                      removeSection: _removeSection,
+                      removeExercise: _removeExercise,
+                    ),
+                SizedBox(height: 10),
+                FlatButton(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Row(
+                    children: <Widget>[
+                      Icon(Icons.add, color: Theme.of(context).accentColor),
+                      SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            'Add a training section',
+                            style: TextStyle(
+                                color: Theme.of(context).accentColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16),
+                          ),
+                        ],
+                      )
+                    ],
                   ),
-              SizedBox(height: 10),
-              FlatButton(
-                padding: const EdgeInsets.all(10.0),
-                child: Row(
-                  children: <Widget>[
-                    Icon(Icons.add, color: Theme.of(context).accentColor),
-                    SizedBox(width: 10),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(
-                          'Add a training section',
-                          style: TextStyle(
-                              color: Theme.of(context).accentColor,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16),
-                        ),
-                      ],
-                    )
-                  ],
+                  onPressed: () {
+                    _addTrainingSection(id: _uuid.v1());
+                  },
                 ),
-                onPressed: () {
-                  _addTrainingSection(id: _uuid.v1());
-                },
-              ),
-              SizedBox(height: 10),
-              RaisedButton(
-                color: Theme.of(context).accentColor,
-                child: Text(
-                  'Save',
-                  style: TextStyle(color: Colors.white),
+                SizedBox(height: 10),
+                RaisedButton(
+                  color: Theme.of(context).accentColor,
+                  child: Text(
+                    'Save',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  onPressed: _saveForm,
                 ),
-                onPressed: _saveForm,
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         padding: const EdgeInsets.all(10.0),
