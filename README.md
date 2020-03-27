@@ -45,6 +45,8 @@ A new Flutter project.
     - description
 
 ## Screenshots v0.0.1
-
-<img src="./docs/screenshot1.png" alt="screenshot 1" width="300"><img src="./docs/screenshot2.png" alt="screenshot 2" width="300"><img src="./docs/screenshot3.png" alt="screenshot 3" width="300"><img src="./docs/screenshot4.png" alt="screenshot 4" width="300">
+|Sessions|Programs|
+|----|----|
+|<img src="./docs/screenshot1.png" alt="screenshot 1" width="300">|<img src="./docs/screenshot2.png" alt="screenshot 2" width="300">|
+|<img src="./docs/screenshot4.png" alt="screenshot 4" width="300">|<img src="./docs/screenshot3.png" alt="screenshot 3" width="300">|
 
