@@ -9,7 +9,7 @@ class DBHelper {
       path.join(dbPath, 'gym.db'),
       onCreate: (db, version) {
         db.execute('CREATE TABLE programs(id TEXT PRIMARY KEY, name TEXT, cycles INTEGER, programDays TEXT); ');
-        return db.execute('CREATE TABLE sessions(id TEXT PRIMARY KEY, date TEXT, duration INTEGER, programDayId TEXT, completedExerciseIds TEXT); ');
+        return db.execute('CREATE TABLE sessions(id TEXT PRIMARY KEY, date TEXT, duration INTEGER, programDayId TEXT, programId TEXT, completedExerciseIds TEXT); ');
       },
       version: 1,
     );

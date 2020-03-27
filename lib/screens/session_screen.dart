@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 import '../models/program.dart';
 import '../models/session.dart';
@@ -42,15 +43,17 @@ class _SessionScreenState extends State<SessionScreen> {
       setState(() {
         _ongoingProgram = value;
       });
-    });
-    Provider.of<Sessions>(context, listen: false).ongoing.then((session) {
-      setState(() {
-        _session = session;
-        _programDay = _ongoingProgram.programDays
-            .firstWhere((item) => item.id == _session.programDayId);
+
+      Provider.of<Sessions>(context, listen: false).ongoing.then((session) {
+        setState(() {
+          _session = session;
+          _programDay = _ongoingProgram.programDays
+              .firstWhere((item) => item.id == _session.programDayId);
+        });
       });
+      _timer = Timer.periodic(Duration(milliseconds: 500), updateClock);
     });
-    _timer = Timer.periodic(Duration(milliseconds: 500), updateClock);
+
     super.initState();
   }
 
@@ -61,9 +64,13 @@ class _SessionScreenState extends State<SessionScreen> {
     super.dispose();
   }
 
-  bool isCompletedExercise(int index) =>
-      _session.completedExerciseIds != null &&
-      _session.completedExerciseIds.contains(_programDay.exercises[index].id);
+  bool isCompletedExercise(int index) {
+    return _session.completedExerciseIds != null &&
+        _session.completedExerciseIds
+                .indexOf(_programDay.exercises[index].id) !=
+            -1;
+    //_session.completedExerciseIds.contains(_programDay.exercises[index].id);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,47 +97,46 @@ class _SessionScreenState extends State<SessionScreen> {
                                 )),
                             Expanded(
                                 flex: 0,
-                                child: ListView.builder(
-                                    shrinkWrap: true,
-                                    itemCount: _programDay.exercises.length,
-                                    itemBuilder: (ctx, i) =>
-                                        isCompletedExercise(i)
-                                            ? ListTile(
-                                                leading: CircleAvatar(
-                                                  backgroundColor: Colors.grey,
-                                                  child: FittedBox(
-                                                    child: Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              5.0),
-                                                      child: Column(
-                                                        children: <Widget>[
-                                                          Text(
-                                                            _programDay
-                                                                .exercises[i]
-                                                                .repeats
-                                                                .toString(),
-                                                            style: TextStyle(
-                                                                fontSize: 24,
-                                                                color: Colors
-                                                                    .white),
-                                                          ),
-                                                          Text('reps',
-                                                              style: TextStyle(
-                                                                  color: Colors
-                                                                      .white)),
-                                                        ],
-                                                      ),
+                                child: SingleChildScrollView(
+                                  child: Column(children: <Widget>[
+                                    for (var i = 0;
+                                        i < _programDay.exercises.length;
+                                        i++)
+                                      if (isCompletedExercise(i))
+                                        ListTile(
+                                          leading: CircleAvatar(
+                                            backgroundColor: Colors.grey,
+                                            child: FittedBox(
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(5.0),
+                                                child: Column(
+                                                  children: <Widget>[
+                                                    Text(
+                                                      _programDay
+                                                          .exercises[i].repeats
+                                                          .toString(),
+                                                      style: TextStyle(
+                                                          fontSize: 24,
+                                                          color: Colors.white),
                                                     ),
-                                                  ),
+                                                    Text('reps',
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.white)),
+                                                  ],
                                                 ),
-                                                title: Text(
-                                                    _programDay
-                                                        .exercises[i].name,
-                                                    style: TextStyle(
-                                                        color: Colors.grey)),
-                                              )
-                                            : null))
+                                              ),
+                                            ),
+                                          ),
+                                          title: Text(
+                                              _programDay.exercises[i].name,
+                                              style: TextStyle(
+                                                  color: Colors.grey)),
+                                        )
+                                  ]),
+                                  // isCompletedExercise(i)
+                                ))
                           ],
                           Text(
                             'Upcoming exercises:',
@@ -146,21 +152,9 @@ class _SessionScreenState extends State<SessionScreen> {
                               itemBuilder: (context, i) => isCompletedExercise(
                                       i)
                                   ? null
-                                  : Dismissible(
-                                      direction: DismissDirection.startToEnd,
-                                      background: Container(
-                                        color: Colors.green,
-                                        alignment: Alignment.centerLeft,
-                                        child: Padding(
-                                          padding:
-                                              const EdgeInsets.only(left: 20.0),
-                                          child: Icon(
-                                            Icons.check,
-                                            color: Colors.white,
-                                            size: 30,
-                                          ),
-                                        ),
-                                      ),
+                                  : Slidable(
+                                      actionPane: SlidableDrawerActionPane(),
+                                      actionExtentRatio: 0.25,
                                       child: ListTile(
                                         leading: CircleAvatar(
                                           child: FittedBox(
@@ -187,30 +181,39 @@ class _SessionScreenState extends State<SessionScreen> {
                                       ),
                                       key: Key(_programDay.exercises[i].id +
                                           _randomString),
-                                      onDismissed: (direction) {
-                                        var ex = _programDay.exercises[i];
-                                        final ses = Session(
-                                          id: _session.id,
-                                          date: _session.date,
-                                          duration: DateTime.now()
-                                              .difference(_session.date),
-                                          programDayId: _session.programDayId,
-                                          completedExerciseIds: [
-                                            ..._session.completedExerciseIds,
-                                            ex.id
-                                          ],
-                                        );
-                                        _randomString =
-                                            Random().nextInt(10000).toString();
-                                        sessions.addSession(ses).then((_) {
-                                          setState(() {
-                                            _session = ses;
-                                          });
-                                          print(_session.completedExerciseIds
-                                              .toString());
-                                          print(_programDay.exercises.length);
-                                        });
-                                      },
+                                      actions: <Widget>[
+                                        IconSlideAction(
+                                            caption: 'Done',
+                                            color: Colors.green,
+                                            icon: Icons.check,
+                                            onTap: () {
+                                              var ex = _programDay.exercises[i];
+                                              final ses = Session(
+                                                id: _session.id,
+                                                date: _session.date,
+                                                duration: DateTime.now()
+                                                    .difference(_session.date),
+                                                programDayId:
+                                                    _session.programDayId,
+                                                programId: _ongoingProgram.id,
+                                                completedExerciseIds: [
+                                                  ..._session
+                                                      .completedExerciseIds,
+                                                  ex.id
+                                                ],
+                                              );
+                                              _randomString = Random()
+                                                  .nextInt(10000)
+                                                  .toString();
+                                              sessions
+                                                  .addSession(ses)
+                                                  .then((_) {
+                                                setState(() {
+                                                  _session = ses;
+                                                });
+                                              });
+                                            }),
+                                      ],
                                     ),
                             ),
                           ),
@@ -226,6 +229,7 @@ class _SessionScreenState extends State<SessionScreen> {
                                     duration: DateTime.now()
                                         .difference(_session.date),
                                     programDayId: _session.programDayId,
+                                    programId: _ongoingProgram.id,
                                     completedExerciseIds:
                                         _session.completedExerciseIds,
                                   ));

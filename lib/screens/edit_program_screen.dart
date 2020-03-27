@@ -164,18 +164,19 @@ class _EditProgramScreenState extends State<EditProgramScreen> {
     _form.currentState.save();
 
     final program = Program(
-      id: _programId ?? _uuid.v1(),
+      id: _programId ?? '${_uuid.v4()}-${DateTime.now().hashCode}',
       name: _programName,
       cycles: 1,
       programDays: _sections
           .where((item) => item != null)
           .map((section) => ProgramDay(
-                id: section['id'] ?? _uuid.v1(),
+                id: section['id'] ?? '${_uuid.v4()}-${DateTime.now().hashCode}',
                 name: section['name'],
                 exercises: section['exercises']
                     .where((item) => item != null)
                     .map<Exercise>((exercise) => Exercise(
-                          id: exercise['id'] ?? _uuid.v1(),
+                          id: exercise['id'] ??
+                              '${_uuid.v4()}-${DateTime.now().hashCode}',
                           name: exercise['name'],
                           repeats: int.parse(exercise['reps']),
                           description: exercise['description'],

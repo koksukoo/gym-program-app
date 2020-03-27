@@ -10,7 +10,6 @@ class Sessions with ChangeNotifier {
   List<Session> get items => [..._items];
 
   Future<Session> get ongoing async {
-    await refreshSessions();
     if (_items.length <= 0) {
       return null;
     }
@@ -59,10 +58,11 @@ class Sessions with ChangeNotifier {
     DBHelper.insert('sessions', session.toDatabaseFormat());
   }
 
-  Future<void> refreshSessions() async {
+  Future<void> refreshSessions(String programId) async {
     final response = await DBHelper.getData('sessions');
-    _items =
-        response.map((program) => Session.fromDatabaseFormat(program)).toList();
+    _items = response
+        .map((program) => Session.fromDatabaseFormat(program))
+        .where((session) => session.programId == programId).toList();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (items.length > 0) {
       final ongoingPref = prefs.getString('ongoingSessionId');

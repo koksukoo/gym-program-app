@@ -94,6 +94,7 @@ class _ProgramListScreenState extends State<ProgramListScreen> {
                                     date: DateTime.now(),
                                     duration: null,
                                     programDayId: _selectedSection.id,
+                                    programId: _ongoingProgram.id,
                                     completedExerciseIds: []),
                                 true);
                         Navigator.pushReplacementNamed(
@@ -109,7 +110,8 @@ class _ProgramListScreenState extends State<ProgramListScreen> {
   }
 
   Future<void> _refreshSessions() async {
-    await Provider.of<Sessions>(context, listen: false).refreshSessions();
+    await Provider.of<Sessions>(context, listen: false)
+        .refreshSessions(_ongoingProgram.id);
   }
 
   @override
@@ -118,13 +120,14 @@ class _ProgramListScreenState extends State<ProgramListScreen> {
       setState(() {
         _ongoingProgram = value;
       });
-    });
-    Provider.of<Sessions>(context, listen: false).refreshSessions();
-    Provider.of<Sessions>(context, listen: false).ongoing.then((value) {
-      setState(() {
-        _ongoingSession = value;
+      Provider.of<Sessions>(context, listen: false).refreshSessions(value.id);
+      Provider.of<Sessions>(context, listen: false).ongoing.then((session) {
+        setState(() {
+          _ongoingSession = session;
+        });
       });
     });
+
     super.initState();
   }
 
@@ -151,7 +154,9 @@ class _ProgramListScreenState extends State<ProgramListScreen> {
                     final session = sessions.items[i];
                     final hasCompletedExercises =
                         session.completedExerciseIds != null;
-                    final durationSeconds = session.duration.inSeconds;
+                    final durationSeconds = session.duration == null
+                        ? 0
+                        : session.duration.inSeconds;
                     final hours = (durationSeconds / 3600).floor();
                     final minutes =
                         (durationSeconds / 60 - (hours * 60)).floor();
@@ -224,7 +229,7 @@ class _ProgramListScreenState extends State<ProgramListScreen> {
             _startSession();
           },
           tooltip: 'Start Session',
-          child: FittedBox(child: Text('New')),
+          child: Icon(Icons.add),
         ),
       ),
     );
