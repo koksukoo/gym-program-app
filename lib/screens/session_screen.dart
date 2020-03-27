@@ -64,13 +64,9 @@ class _SessionScreenState extends State<SessionScreen> {
     super.dispose();
   }
 
-  bool isCompletedExercise(int index) {
-    return _session.completedExerciseIds != null &&
-        _session.completedExerciseIds
-                .indexOf(_programDay.exercises[index].id) !=
-            -1;
-    //_session.completedExerciseIds.contains(_programDay.exercises[index].id);
-  }
+  bool isCompletedExercise(int index) => _session.completedExerciseIds == null
+      ? false
+      : _session.completedExerciseIds.contains(_programDay.exercises[index].id);
 
   @override
   Widget build(BuildContext context) {
@@ -146,75 +142,80 @@ class _SessionScreenState extends State<SessionScreen> {
                           ),
                           Expanded(
                             flex: 1,
-                            child: ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: _programDay.exercises.length,
-                              itemBuilder: (context, i) => isCompletedExercise(
-                                      i)
-                                  ? null
-                                  : Slidable(
-                                      actionPane: SlidableDrawerActionPane(),
-                                      actionExtentRatio: 0.25,
-                                      child: ListTile(
-                                        leading: CircleAvatar(
-                                          child: FittedBox(
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.all(5.0),
-                                              child: Column(
-                                                children: <Widget>[
-                                                  Text(
-                                                    _programDay
-                                                        .exercises[i].repeats
-                                                        .toString(),
-                                                    style:
-                                                        TextStyle(fontSize: 24),
-                                                  ),
-                                                  Text('reps'),
-                                                ],
+                            child: SingleChildScrollView(
+                              child: Column(
+                                children: <Widget>[
+                                  for (var i = 0;
+                                      i < _programDay.exercises.length;
+                                      i++)
+                                    if (!isCompletedExercise(i))
+                                      Slidable(
+                                        actionPane: SlidableDrawerActionPane(),
+                                        actionExtentRatio: 0.25,
+                                        child: ListTile(
+                                          leading: CircleAvatar(
+                                            child: FittedBox(
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(5.0),
+                                                child: Column(
+                                                  children: <Widget>[
+                                                    Text(
+                                                      _programDay
+                                                          .exercises[i].repeats
+                                                          .toString(),
+                                                      style: TextStyle(
+                                                          fontSize: 24),
+                                                    ),
+                                                    Text('reps'),
+                                                  ],
+                                                ),
                                               ),
                                             ),
                                           ),
+                                          title: Text(
+                                              _programDay.exercises[i].name),
                                         ),
-                                        title:
-                                            Text(_programDay.exercises[i].name),
-                                      ),
-                                      key: Key(_programDay.exercises[i].id +
-                                          _randomString),
-                                      actions: <Widget>[
-                                        IconSlideAction(
-                                            caption: 'Done',
-                                            color: Colors.green,
-                                            icon: Icons.check,
-                                            onTap: () {
-                                              var ex = _programDay.exercises[i];
-                                              final ses = Session(
-                                                id: _session.id,
-                                                date: _session.date,
-                                                duration: DateTime.now()
-                                                    .difference(_session.date),
-                                                programDayId:
-                                                    _session.programDayId,
-                                                programId: _ongoingProgram.id,
-                                                completedExerciseIds: [
-                                                  ..._session
-                                                      .completedExerciseIds,
-                                                  ex.id
-                                                ],
-                                              );
-                                              _randomString = Random()
-                                                  .nextInt(10000)
-                                                  .toString();
-                                              sessions
-                                                  .addSession(ses)
-                                                  .then((_) {
-                                                setState(() {
-                                                  _session = ses;
+                                        key: Key(_programDay.exercises[i].id +
+                                            _randomString),
+                                        actions: <Widget>[
+                                          IconSlideAction(
+                                              caption: 'Done',
+                                              color: Colors.green,
+                                              icon: Icons.check,
+                                              onTap: () {
+                                                var ex =
+                                                    _programDay.exercises[i];
+                                                final ses = Session(
+                                                  id: _session.id,
+                                                  date: _session.date,
+                                                  duration: DateTime.now()
+                                                      .difference(
+                                                          _session.date),
+                                                  programDayId:
+                                                      _session.programDayId,
+                                                  programId: _ongoingProgram.id,
+                                                  completedExerciseIds: [
+                                                    ..._session
+                                                        .completedExerciseIds,
+                                                    ex.id
+                                                  ],
+                                                );
+                                                _randomString = Random()
+                                                    .nextInt(10000)
+                                                    .toString();
+                                                sessions
+                                                    .addSession(ses)
+                                                    .then((_) {
+                                                  setState(() {
+                                                    _session = ses;
+                                                  });
                                                 });
-                                              });
-                                            }),
-                                      ],
-                                    ),
+                                              }),
+                                        ],
+                                      )
+                                ],
+                              ),
                             ),
                           ),
                           Container(
